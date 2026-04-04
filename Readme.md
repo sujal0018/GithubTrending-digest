@@ -1,24 +1,29 @@
 # GitHub Trending Digest Backend
 
-Backend service for a GitHub Trending Digest app. The current implementation includes:
+Backend service for collecting GitHub trending repositories and returning an AI-generated digest summary.
 
-- An Express server with a basic health route.
-- MongoDB connection setup through Mongoose.
-- A GitHub Trending scraper service that fetches the trending page and parses the HTML with Cheerio.
-- A digest API route/controller flow for returning trending repositories as JSON.
-- Environment-based configuration for the app port and database connection string.
+## What is implemented
 
-## What has been done so far
+- Express API server and basic health route.
+- MongoDB connection setup via Mongoose.
+- GitHub Trending scraper using Axios + Cheerio.
+- Digest endpoint that:
+	- fetches trending repositories,
+	- limits results to top 5,
+	- generates a Gemini summary,
+	- returns both raw data and summary in one JSON response.
+- Standalone local test script (`test.js`) for running scraper + summarizer without the API route.
 
-- Set up the Node.js backend project structure.
-- Added the server entry point in `server.js`.
-- Created the Express app in `src/app.js`.
-- Added MongoDB connection logic in `src/config/database.js`.
-- Added a GitHub trending fetcher in `src/services/githubService.js`.
-- Added digest route wiring in `src/routes/digest.routes.js` and mounted it in `src/app.js`.
-- Added digest controller in `src/controllers/digest.controller.js` to expose trending data via API.
-- Added placeholder `src/services/aiService.js` for AI summarization integration.
-- Added dev and start scripts in `package.json`.
+## Project Structure
+
+- `server.js` - Server entry point.
+- `src/app.js` - Express app setup and route mounting.
+- `src/config/database.js` - MongoDB connection config.
+- `src/routes/digest.routes.js` - Digest route definitions.
+- `src/controllers/digest.controller.js` - Controller that fetches repos and summary.
+- `src/services/githubService.js` - Trending scraper (top 5 repositories).
+- `src/services/aiService.js` - Gemini summarization service.
+- `test.js` - Local script to test fetching + summarization quickly.
 
 ## Tech Stack
 
@@ -27,6 +32,7 @@ Backend service for a GitHub Trending Digest app. The current implementation inc
 - MongoDB + Mongoose
 - Axios
 - Cheerio
+- Google Gemini SDK (`@google/generative-ai`)
 - dotenv
 
 ## Setup
@@ -37,11 +43,12 @@ Backend service for a GitHub Trending Digest app. The current implementation inc
 npm install
 ```
 
-2. Create a `.env` file in the backend folder with at least:
+2. Create a `.env` file in the backend folder:
 
 ```env
 PORT=3000
 MONGO_URI=your_mongodb_connection_string
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 3. Start the server:
@@ -56,11 +63,14 @@ or
 npm start
 ```
 
-## Current Behavior
+## API Behavior
 
-- The root route responds with: `GitHub Trending Digest API is running 🚀`
-- `GET /digest/trending` returns fetched trending repositories.
-- On startup, the app connects to MongoDB.
+- Root route responds with: `GitHub Trending Digest API is running 🚀`
+- `GET /digest/trending`:
+	- scrapes GitHub Trending,
+	- keeps top 5 repositories,
+	- generates an AI summary,
+	- returns both list + summary.
 
 ### Sample Response (`GET /digest/trending`)
 
@@ -76,11 +86,20 @@ npm start
 			"forks": "678",
 			"startstoday": "123 stars today"
 		}
-	]
+	],
+	"summary": "1. owner/repo\n- What it does: ...\n- Why it's useful: ..."
 }
+```
+
+## Quick Local Test
+
+Run this to test scraping + summarization directly:
+
+```bash
+node test.js
 ```
 
 ## Notes
 
-- The AI summarization service file exists as a scaffold and is not implemented yet.
-- Jobs and models folders are present for upcoming scheduling and persistence work.
+- `@google/genai` exists in dependencies but is not currently used by the service layer.
+- Jobs and models folders are present for upcoming scheduling and persistence features.

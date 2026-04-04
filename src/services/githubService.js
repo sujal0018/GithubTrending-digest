@@ -15,7 +15,8 @@ const getTrendingRepos = async () => {
         const repos = []
        
         $( 'article.Box-row' ).each((index, ele) => {
-            const repoName = $(ele).find('h2 a ').text().replace(/\s+/g, "").trim()
+            if (index < 5) {
+                const repoName = $(ele).find('h2 a ').text().replace(/\s+/g, "").trim()
             const description = $(ele).find("p").text().trim() || "No description"
             const language = $(ele).find('span[itemprop="programmingLanguage"]').text().trim()||"Unknown"
             const stars = $(ele).find('a[href$="/stargazers"]').text().trim() || "0"
@@ -23,10 +24,12 @@ const getTrendingRepos = async () => {
             const startstoday = $(ele).find("span.d-inline-block.float-sm-right").text().trim()||"Not available"
         
             repos.push({repoName, description, language, stars, forks, startstoday})
+            }
             
         })
 
         return repos
+        
     }catch (error) {
         console.error('Error fetching trending repositories:', error)
     }
